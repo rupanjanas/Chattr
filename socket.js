@@ -1,9 +1,9 @@
 const socketIo = (io) => {
   // Store connected users with their room information using socket.id as their key
   const connectedUsers = new Map();
-  // Store admins for each group
+  // Store the admin user ID for each group (using user._id)
   const groupAdmins = new Map();
-  
+
   // Handle new socket connections
   io.on("connection", (socket) => {
     // Get user from authentication
@@ -17,10 +17,13 @@ const socketIo = (io) => {
       // Store user and room info in connectedUsers map
       connectedUsers.set(socket.id, { user, room: groupId });
 
-      // Check if the user is the first to join the room (creator) and assign them as admin
+      // Check if the group admin is not yet set and if the current user is the creator
+      // (We'll need to pass the creator information when the group is created)
+      // For now, let's assume the first person to join becomes the admin.
+      // A more robust solution would involve storing the creator's ID in the group data.
       if (!groupAdmins.has(groupId)) {
-        groupAdmins.set(groupId, socket.id); // Set the first user as the admin
-        console.log(`${user?.username} is the admin of the group ${groupId}`);
+        groupAdmins.set(groupId, user?._id); // Set the first user's ID as the admin
+        console.log(`${user?.username} (${user?._id}) is the admin of the group ${groupId}`);
       }
 
       // Get list of all users currently in the room
@@ -56,7 +59,7 @@ const socketIo = (io) => {
     // Triggered when user sends a new message
     socket.on("new message", (message) => {
       // Broadcast message to all other users in the room
-      socket.to(message.groupId).emit("message received", message);
+      io.in(message.groupId).emit("message received", message);
     });
     //!END: New Message Handler
 
@@ -88,10 +91,10 @@ const socketIo = (io) => {
     });
     //!END: Typing Indicator
 
-    //!START: Admin Check (For example, if someone tries to add/remove users)
+    //!START: Admin Check
     socket.on("isAdmin", (groupId, callback) => {
-      // Check if the user is the admin of the group
-      if (groupAdmins.get(groupId) === socket.id) {
+      // Check if the user's ID matches the admin ID for the group
+      if (groupAdmins.get(groupId) === user?._id) {
         callback(true); // User is admin
       } else {
         callback(false); // User is not admin
