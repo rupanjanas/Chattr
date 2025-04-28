@@ -1,19 +1,20 @@
 const express = require("express");
 const Group = require("../models/GroupModel");
-const { protect, isAdmin } = require("../middleware/authMiddleware");
+const { protect } = require("../middleware/authMiddleware"); // Removed isAdmin import
 const { trusted } = require("mongoose");
 
 const groupRouter = express.Router();
 
 //Create a new group
-groupRouter.post("/", protect, isAdmin, async (req, res) => {
+groupRouter.post("/", protect, async (req, res) => {
   try {
     const { name, description } = req.body;
     const group = await Group.create({
       name,
       description,
-      admin: req.user._id,
-      members: [req.user._id],
+      admin: req.user._id, // Set the creator as admin
+      members: [req.user._id], // Add the creator as the first member
+      creator: req.user._id, // Add the creator field
     });
     const populatedGroup = await Group.findById(group._id)
       .populate("admin", "username email")
@@ -21,7 +22,6 @@ groupRouter.post("/", protect, isAdmin, async (req, res) => {
     res.status(201).json({ populatedGroup });
   } catch (error) {
     console.log(error);
-
     res.status(400).json({ message: error.message });
   }
 });
