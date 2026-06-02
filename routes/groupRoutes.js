@@ -1,7 +1,6 @@
 const express = require("express");
 const Group = require("../models/GroupModel");
 const { protect } = require("../middleware/authMiddleware"); // Removed isAdmin import
-const { trusted } = require("mongoose");
 
 const groupRouter = express.Router();
 
