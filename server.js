@@ -14,7 +14,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketio(server, {
   cors: {
-    origin: ["https://chic-marzipan-e82e13.netlify.app/"],
+    origin: ["https://chic-marzipan-e82e13.netlify.app"],
     methods: ["GET", "POST"],
     credentials: true,
   },
