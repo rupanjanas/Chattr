@@ -59,7 +59,7 @@ const socketIo = (io) => {
     // Triggered when user sends a new message
     socket.on("new message", (message) => {
       // Broadcast message to all other users in the room
-      io.in(message.groupId).emit("message received", message);
+      io.to(message.groupId).emit("message received", message);
     });
     //!END: New Message Handler
 
