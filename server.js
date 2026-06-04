@@ -12,15 +12,14 @@ dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
-const io = socketio(server, {
-  cors: {
-    origin: ["https://chic-marzipan-e82e13.netlify.app"],
-    methods: ["GET", "POST"],
-    credentials: true,
-  },
-});
-//middlewares
-app.use(cors());
+const corsOptions = {
+  origin: "https://chic-marzipan-e82e13.netlify.app",
+  methods: ["GET", "POST"],
+  credentials: true,
+};
+
+app.use(cors(corsOptions)); // Use same config for both
+const io = socketio(server, { cors: corsOptions });
 app.use(express.json());
 //connect to db
 mongoose
