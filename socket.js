@@ -1,38 +1,21 @@
-const socketIo = (io) => {
-  // Store connected users with their room information using socket.id as their key
-  const connectedUsers = new Map();
-  // Store the admin user ID for each group (using user._id)
-  const groupAdmins = new Map();
+const Group = require("./models/GroupModel");
 
-  // Handle new socket connections
+const socketIo = (io) => {
+  const connectedUsers = new Map();
+
   io.on("connection", (socket) => {
-    // Get user from authentication
     const user = socket.handshake.auth.user;
     console.log("User connected", user?.username);
 
     //!START: Join room Handler
     socket.on("join room", (groupId) => {
-      // Add socket to the specified room
       socket.join(groupId);
-      // Store user and room info in connectedUsers map
       connectedUsers.set(socket.id, { user, room: groupId });
 
-      // Check if the group admin is not yet set and if the current user is the creator
-      // (We'll need to pass the creator information when the group is created)
-      // For now, let's assume the first person to join becomes the admin.
-      // A more robust solution would involve storing the creator's ID in the group data.
-      if (!groupAdmins.has(groupId)) {
-        groupAdmins.set(groupId, user?._id); // Set the first user's ID as the admin
-        console.log(`${user?.username} (${user?._id}) is the admin of the group ${groupId}`);
-      }
-
-      // Get list of all users currently in the room
       const usersInRoom = Array.from(connectedUsers.values())
         .filter((u) => u.room === groupId)
         .map((u) => u.user);
-      // Emit updated users list to all clients in the room
       io.in(groupId).emit("users in room", usersInRoom);
-      // Broadcast join notification to all other users in the room
       socket.to(groupId).emit("notification", {
         type: "USER_JOINED",
         message: `${user?.username} has joined`,
@@ -42,13 +25,10 @@ const socketIo = (io) => {
     //!END: Join room Handler
 
     //!START: Leave room Handler
-    // Triggered when user manually leaves a room
     socket.on("leave room", (groupId) => {
       console.log(`${user?.username} leaving room:`, groupId);
-      // Remove socket from the room
       socket.leave(groupId);
       if (connectedUsers.has(socket.id)) {
-        // Remove user from connected users and notify others
         connectedUsers.delete(socket.id);
         socket.to(groupId).emit("user left", user?._id);
       }
@@ -56,46 +36,41 @@ const socketIo = (io) => {
     //!END: Leave room Handler
 
     //!START: New Message Handler
-    // Triggered when user sends a new message
     socket.on("new message", (message) => {
-      // Broadcast message to all other users in the room
       io.to(message.groupId).emit("message received", message);
     });
     //!END: New Message Handler
 
     //!START: Disconnect Handler
-    // Triggered when user closes the connection
     socket.on("disconnect", () => {
       console.log(`${user?.username} disconnected`);
       if (connectedUsers.has(socket.id)) {
-        // Get user's room info before removing
         const userData = connectedUsers.get(socket.id);
-        // Notify others in the room about user's departure
         socket.to(userData.room).emit("user left", user?._id);
-        // Remove user from connected users
         connectedUsers.delete(socket.id);
       }
     });
     //!END: Disconnect Handler
 
     //!START: Typing Indicator
-    // Triggered when user starts typing
     socket.on("typing", ({ groupId, username }) => {
-      // Broadcast typing status to other users in the room
       socket.to(groupId).emit("user typing", { username });
     });
 
     socket.on("stop typing", ({ groupId }) => {
-      // Broadcast stop typing status to other users in the room
       socket.to(groupId).emit("user stop typing", { username: user?.username });
     });
     //!END: Typing Indicator
 
-    //!START: Admin Check
+    //!START: Admin Check — queries DB instead of unreliable in-memory map
     socket.on("isAdmin", async (groupId, callback) => {
-  const group = await Group.findById(groupId).select("admin");
-  callback(group?.admin?.toString() === user?._id?.toString());
-});
+      try {
+        const group = await Group.findById(groupId).select("admin");
+        callback(group?.admin?.toString() === user?._id?.toString());
+      } catch (error) {
+        callback(false);
+      }
+    });
     //!END: Admin Check
   });
 };
