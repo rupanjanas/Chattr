@@ -1,9 +1,5 @@
-const express = require("express");
 const jwt = require("jsonwebtoken");
 const User = require("../models/UserModel");
-const cors = require("cors");
-const app = express();
-app.use(cors());
 
 const protect = async (req, res, next) => {
   //get the token the user is passing
