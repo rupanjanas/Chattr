@@ -4,7 +4,7 @@ const { protect } = require("../middleware/authMiddleware");
 
 const messageRouter = express.Router();
 
-//send message
+// Send a message
 messageRouter.post("/", protect, async (req, res) => {
   try {
     const { content, groupId } = req.body;
@@ -23,7 +23,7 @@ messageRouter.post("/", protect, async (req, res) => {
   }
 });
 
-//get messages for a group
+// Get messages for a group
 messageRouter.get("/:groupId", protect, async (req, res) => {
   try {
     const messages = await Message.find({ group: req.params.groupId })
@@ -34,4 +34,5 @@ messageRouter.get("/:groupId", protect, async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 });
+
 module.exports = messageRouter;
