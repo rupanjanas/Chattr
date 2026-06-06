@@ -37,7 +37,7 @@ const socketIo = (io) => {
 
     //!START: New Message Handler
     socket.on("new message", (message) => {
-      io.to(message.groupId).emit("message received", message);
+      socket.to(message.groupId).emit("message received", message);
     });
     //!END: New Message Handler
 
