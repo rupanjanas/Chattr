@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 
-//schema
 const groupSchema = new mongoose.Schema(
   {
     name: {
@@ -14,10 +13,6 @@ const groupSchema = new mongoose.Schema(
     },
     members: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     admin: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    },
-    creator: { // Add the creator field
       type: mongoose.Schema.Types.ObjectId,
       required: true,
       ref: "User",
