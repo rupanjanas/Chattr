@@ -2,7 +2,6 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/UserModel");
 
 const protect = async (req, res, next) => {
-  //get the token the user is passing
   let token;
   if (
     req.headers.authorization &&
@@ -13,13 +12,11 @@ const protect = async (req, res, next) => {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       req.user = await User.findById(decoded.id).select("-password");
       console.log(req.user);
-
       next();
     } catch (error) {
       return res.status(401).json({ message: "Not authorized, token failed" });
     }
-  }
-  else {
+  } else {
     return res.status(401).json({ message: "Not authorized, token not found" });
   }
 };
@@ -32,7 +29,7 @@ const isAdmin = async (req, res, next) => {
       return res.status(403).json({ message: "Not authorized admin only" });
     }
   } catch (error) {
-    res.status(401).json({ message: "Not authorized " });
+    res.status(401).json({ message: "Not authorized" });
   }
 };
 
