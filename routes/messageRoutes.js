@@ -19,7 +19,7 @@ messageRouter.post("/", protect, async (req, res) => {
     );
     res.json(populatedMessage);
   } catch (error) {
-    res.status(400).json({ message: error.Message });
+    res.status(400).json({ message: error.message });
   }
 });
 
@@ -31,7 +31,7 @@ messageRouter.get("/:groupId", protect, async (req, res) => {
       .sort({ createdAt: 1 });
     res.json(messages);
   } catch (error) {
-    res.status(400).json({ message: error.Message });
+    res.status(400).json({ message: error.message });
   }
 });
 module.exports = messageRouter;
