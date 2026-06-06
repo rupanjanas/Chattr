@@ -92,14 +92,10 @@ const socketIo = (io) => {
     //!END: Typing Indicator
 
     //!START: Admin Check
-    socket.on("isAdmin", (groupId, callback) => {
-      // Check if the user's ID matches the admin ID for the group
-      if (groupAdmins.get(groupId) === user?._id) {
-        callback(true); // User is admin
-      } else {
-        callback(false); // User is not admin
-      }
-    });
+    socket.on("isAdmin", async (groupId, callback) => {
+  const group = await Group.findById(groupId).select("admin");
+  callback(group?.admin?.toString() === user?._id?.toString());
+});
     //!END: Admin Check
   });
 };
