@@ -7,10 +7,9 @@ const socketio = require("socket.io");
 const userRouter = require("./routes/userRoutes");
 const socketIo = require("./socket");
 const groupRouter = require("./routes/groupRoutes");
-const messageRouter = require("./routes/messageRoutes");
+const createMessageRouter = require("./routes/messageRoutes"); 
 
 dotenv.config();
-
 const app = express();
 const server = http.createServer(app);
 
@@ -41,7 +40,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/users", userRouter);
 app.use("/api/groups", groupRouter);
-app.use("/api/messages", messageRouter);
+app.use("/api/messages", createMessageRouter(io)); 
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
