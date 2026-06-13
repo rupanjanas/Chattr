@@ -13,18 +13,15 @@ const createMessageRouter = (io) => {
         content,
         group: groupId,
       });
-
       const populatedMessage = await Message.findById(message._id).populate(
         "sender",
         "username email"
       );
-
       if (io) {
         io.to(groupId).emit("message received", populatedMessage);
       }
-
       res.json(populatedMessage);
-    } catch (error) 
+    } catch (error) { 
       res.status(400).json({ message: error.message });
     }
   });
