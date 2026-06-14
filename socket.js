@@ -53,10 +53,9 @@ const socketIo = (io) => {
     //!END: Disconnect Handler
 
     //!START: Typing Indicator
-    socket.on("typing", ({ groupId, username }) => {
-      socket.to(groupId).emit("user typing", { username });
-    });
-
+    socket.on("typing", ({ groupId }) => {
+    socket.to(groupId).emit("user typing", {username: user?.username});
+});
     socket.on("stop typing", ({ groupId }) => {
       socket.to(groupId).emit("user stop typing", { username: user?.username });
     });
